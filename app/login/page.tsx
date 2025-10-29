@@ -1,13 +1,56 @@
-import React from 'react';
+'use client'
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FcGoogle } from 'react-icons/fc';
+import { useRouter } from 'next/navigation';
 
 //URL DE LA IMAGEN DE CLOUDINARY
 const CLOUDINARY_IMAGE_URL = "https://res.cloudinary.com/kops/image/upload/v1761669388/login-det_ij9s6f.png";
 
 
-export default function RegisterPage() {
+export default function Page() {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    correo: '',
+    contrasena: ''
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const response = await fetch('http://localhost:8081/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Mostrar alerta de éxito
+        alert('¡Inicio de sesión exitoso!');
+        router.push('/dashboard');
+      } else {
+        // Mostrar alerta de error
+        alert('Error: Correo o contraseña incorrectos');
+      }
+    } catch (error) {
+      // Mostrar alerta de error de conexión
+      alert('Error de conexión: No se pudo conectar con el servidor');
+      console.error('Error:', error);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
   return (
     <div className="grid bg-white h-screen w-full grid-cols-1 font-sans lg:grid-cols-2">
       
@@ -16,18 +59,26 @@ export default function RegisterPage() {
         <div className="w-full max-w-sm">
           <h1 className="mb-8 text-3xl font-bold text-gray-900">Iniciar Sesion</h1>
           
-          <div className="space-y-4 text-gray-700">
+          <form onSubmit={handleSubmit} className="space-y-4 text-gray-700">
             
             <input
               type="email"
+              name="correo"
+              value={formData.correo}
+              onChange={handleChange}
               placeholder="Correo Electrónico"
               className="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:ring-blue-500"
+              required
             />
             
             <input
               type="password"
+              name="contrasena"
+              value={formData.contrasena}
+              onChange={handleChange}
               placeholder="Contraseña"
               className="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:ring-blue-500"
+              required
             />
 
             <button
@@ -36,7 +87,7 @@ export default function RegisterPage() {
             >
               Login
             </button>
-          </div>
+          </form>
           
           <div className="my-6 flex items-center">
             <div className="flex-grow border-t border-gray-300"></div>
@@ -68,8 +119,8 @@ export default function RegisterPage() {
         <Image
           src={CLOUDINARY_IMAGE_URL}
           alt="Imagen de bienvenida a la clínica dental"
-          layout="fill"
-          objectFit="cover"
+          fill={true}
+          className="object-cover"
           priority
         />
       </div>
